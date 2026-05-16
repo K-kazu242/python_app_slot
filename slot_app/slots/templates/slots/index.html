@@ -1,0 +1,331 @@
+{% extends 'slots/base.html' %}
+
+{% block extra_style %}
+<style>
+.date-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 16px;
+  font-family: 'Noto Sans JP', sans-serif;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  -webkit-appearance: none;
+}
+
+/* ── Counter Display ── */
+.counter-display {
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  padding: 28px 20px;
+  text-align: center;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.counter-display::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center top, rgba(245,200,66,0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+.counter-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.counter-value {
+  font-family: 'Zen Dots', cursive;
+  font-size: 52px;
+  font-weight: 400;
+  line-height: 1;
+  transition: color 0.3s, transform 0.15s;
+  letter-spacing: -1px;
+}
+.counter-value.positive { color: var(--green); text-shadow: 0 0 30px rgba(0,230,118,0.3); }
+.counter-value.negative { color: var(--red);   text-shadow: 0 0 30px rgba(255,61,90,0.3); }
+.counter-value.zero     { color: var(--gold);  text-shadow: 0 0 30px rgba(245,200,66,0.3); }
+.counter-value.bump { transform: scale(1.08); }
+.counter-yen { font-size: 20px; margin-left: 4px; vertical-align: middle; }
+
+/* ── Buttons ── */
+.btn-row {
+  margin-bottom: 12px;
+}
+.btn-row-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+.btn-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.btn-amount {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 14px 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  -webkit-appearance: none;
+}
+.btn-amount .sign {
+  font-size: 18px;
+  line-height: 1;
+}
+.btn-amount.plus .sign { color: var(--green); }
+.btn-amount.minus .sign { color: var(--red); }
+.btn-amount:active {
+  transform: scale(0.93);
+}
+.btn-amount.plus:active {
+  background: rgba(0,230,118,0.1);
+  border-color: var(--green-dim);
+}
+.btn-amount.minus:active {
+  background: rgba(255,61,90,0.1);
+  border-color: var(--red-dim);
+}
+
+/* ── Reset ── */
+.btn-reset {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text-muted);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 13px;
+  padding: 12px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: all 0.15s;
+}
+.btn-reset:active { opacity: 0.6; }
+
+/* ── Memo ── */
+.memo-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 15px;
+  font-family: 'Noto Sans JP', sans-serif;
+  padding: 14px 16px;
+  margin-bottom: 24px;
+  resize: none;
+  -webkit-appearance: none;
+}
+.memo-input::placeholder { color: var(--text-muted); }
+
+/* ── Save ── */
+.btn-save {
+  width: 100%;
+  background: linear-gradient(135deg, #d4a820, #f5c842, #d4a820);
+  background-size: 200% 100%;
+  border: none;
+  border-radius: 16px;
+  color: #0a0a0f;
+  font-family: 'Zen Dots', cursive;
+  font-size: 18px;
+  letter-spacing: 2px;
+  padding: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 20px rgba(245,200,66,0.25);
+}
+.btn-save:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 10px rgba(245,200,66,0.15);
+}
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: var(--green);
+  color: #0a0a0f;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 12px 24px;
+  border-radius: 30px;
+  opacity: 0;
+  transition: all 0.3s;
+  pointer-events: none;
+  z-index: 999;
+  white-space: nowrap;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.toast.error { background: var(--red); }
+
+.section-title {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page">
+
+  <!-- 日付 -->
+  <p class="section-title">📅 日付</p>
+  <input type="date" id="dateInput" class="date-input" value="{{ today|date:'Y-m-d' }}">
+
+  <!-- カウンター表示 -->
+  <div class="counter-display">
+    <div class="counter-label">TODAY'S RESULT</div>
+    <div class="counter-value zero" id="counterValue">
+      ¥<span id="displayAmount">0</span>
+    </div>
+  </div>
+
+  <!-- プラスボタン -->
+  <div class="btn-row">
+    <div class="btn-row-label">＋ 勝ち</div>
+    <div class="btn-grid">
+      <button class="btn-amount plus" onclick="changeAmount(500)">
+        <span class="sign">＋</span>500
+      </button>
+      <button class="btn-amount plus" onclick="changeAmount(1000)">
+        <span class="sign">＋</span>1,000
+      </button>
+      <button class="btn-amount plus" onclick="changeAmount(5000)">
+        <span class="sign">＋</span>5,000
+      </button>
+    </div>
+  </div>
+
+  <!-- マイナスボタン -->
+  <div class="btn-row">
+    <div class="btn-row-label">－ 負け</div>
+    <div class="btn-grid">
+      <button class="btn-amount minus" onclick="changeAmount(-500)">
+        <span class="sign">－</span>500
+      </button>
+      <button class="btn-amount minus" onclick="changeAmount(-1000)">
+        <span class="sign">－</span>1,000
+      </button>
+      <button class="btn-amount minus" onclick="changeAmount(-5000)">
+        <span class="sign">－</span>5,000
+      </button>
+    </div>
+  </div>
+
+  <!-- リセット -->
+  <button class="btn-reset" onclick="resetAmount()">↺ リセット</button>
+
+  <!-- メモ -->
+  <p class="section-title">📝 メモ（任意）</p>
+  <textarea id="memoInput" class="memo-input" rows="2" placeholder="例：○○ホール、〇番台など"></textarea>
+
+  <!-- 保存 -->
+  <button class="btn-save" onclick="saveRecord()">SAVE 記録する</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let currentAmount = 0;
+
+  const CSRF_TOKEN = '{{ csrf_token }}';
+
+  function formatNumber(n) {
+    return Math.abs(n).toLocaleString('ja-JP');
+  }
+
+  function updateDisplay() {
+    const el = document.getElementById('displayAmount');
+    const valueEl = document.getElementById('counterValue');
+
+    if (currentAmount > 0) {
+      valueEl.className = 'counter-value positive';
+      valueEl.innerHTML = `+¥<span id="displayAmount">${formatNumber(currentAmount)}</span>`;
+    } else if (currentAmount < 0) {
+      valueEl.className = 'counter-value negative';
+      valueEl.innerHTML = `-¥<span id="displayAmount">${formatNumber(currentAmount)}</span>`;
+    } else {
+      valueEl.className = 'counter-value zero';
+      valueEl.innerHTML = `¥<span id="displayAmount">0</span>`;
+    }
+
+    // Bump animation
+    valueEl.classList.add('bump');
+    setTimeout(() => valueEl.classList.remove('bump'), 150);
+  }
+
+  function changeAmount(delta) {
+    currentAmount += delta;
+    updateDisplay();
+  }
+
+  function resetAmount() {
+    currentAmount = 0;
+    updateDisplay();
+  }
+
+  function showToast(msg, isError = false) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = 'toast' + (isError ? ' error' : '') + ' show';
+    setTimeout(() => toast.className = 'toast' + (isError ? ' error' : ''), 2500);
+  }
+
+  async function saveRecord() {
+    const date = document.getElementById('dateInput').value;
+    const memo = document.getElementById('memoInput').value;
+
+    if (!date) {
+      showToast('日付を選択してください', true);
+      return;
+    }
+
+    try {
+      const res = await fetch('/save/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': CSRF_TOKEN,
+        },
+        body: JSON.stringify({ amount: currentAmount, date, memo }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast('✅ 記録しました！');
+        resetAmount();
+        document.getElementById('memoInput').value = '';
+      } else {
+        showToast('保存に失敗しました', true);
+      }
+    } catch (e) {
+      showToast('エラーが発生しました', true);
+    }
+  }
+</script>
+{% endblock %}

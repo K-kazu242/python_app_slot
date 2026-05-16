@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ログイン | 🎰 SLOT TRACKER</title>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Dots&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --surface2: #1c1c28;
+      --border: #2a2a3a;
+      --gold: #f5c842;
+      --green: #00e676;
+      --red: #ff3d5a;
+      --text: #f0f0f8;
+      --text-muted: #7070a0;
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Noto Sans JP', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+    .logo {
+      font-family: 'Zen Dots', cursive;
+      font-size: 28px;
+      color: var(--gold);
+      text-shadow: 0 0 30px rgba(245,200,66,0.4);
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    .logo-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 2px;
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 32px 24px;
+      width: 100%;
+      max-width: 400px;
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .field {
+      margin-bottom: 16px;
+    }
+    .field label {
+      display: block;
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+    .field input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 16px;
+      font-family: 'Noto Sans JP', sans-serif;
+      padding: 14px 16px;
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+    .field input:focus { border-color: var(--gold); }
+    .error-msg {
+      background: rgba(255,61,90,0.12);
+      border: 1px solid var(--red);
+      border-radius: 12px;
+      color: var(--red);
+      font-size: 13px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, #d4a820, #f5c842, #d4a820);
+      border: none;
+      border-radius: var(--radius);
+      color: #0a0a0f;
+      font-family: 'Zen Dots', cursive;
+      font-size: 16px;
+      letter-spacing: 2px;
+      padding: 16px;
+      cursor: pointer;
+      margin-top: 8px;
+      box-shadow: 0 4px 20px rgba(245,200,66,0.2);
+      transition: transform 0.15s;
+    }
+    .btn-submit:active { transform: scale(0.97); }
+    .switch-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .switch-link a {
+      color: var(--gold);
+      text-decoration: none;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">🎰 SLOT TRACKER</div>
+  <div class="logo-sub">スロット収支管理アプリ</div>
+
+  <div class="card">
+    <div class="card-title">ログイン</div>
+
+    {% if error %}
+      <div class="error-msg">{{ error }}</div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="field">
+        <label>ユーザー名</label>
+        <input type="text" name="username" autocomplete="username" placeholder="username" required>
+      </div>
+      <div class="field">
+        <label>パスワード</label>
+        <input type="password" name="password" autocomplete="current-password" placeholder="••••••" required>
+      </div>
+      <button type="submit" class="btn-submit">LOGIN</button>
+    </form>
+
+    <div class="switch-link">
+      アカウントがない方は <a href="{% url 'signup' %}">新規登録</a>
+    </div>
+  </div>
+</body>
+</html>

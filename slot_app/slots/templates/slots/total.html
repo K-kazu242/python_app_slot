@@ -1,0 +1,235 @@
+{% extends 'slots/base.html' %}
+
+{% block extra_style %}
+<style>
+/* ── Stats Cards ── */
+.stats-total {
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  padding: 24px 20px;
+  text-align: center;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.stats-total::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center top, rgba(245,200,66,0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+.stats-total .label {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 3px;
+  margin-bottom: 8px;
+}
+.stats-total .big-num {
+  font-family: 'Zen Dots', cursive;
+  font-size: 44px;
+  font-weight: 400;
+  line-height: 1;
+}
+.big-num.positive { color: var(--green); text-shadow: 0 0 30px rgba(0,230,118,0.25); }
+.big-num.negative { color: var(--red);   text-shadow: 0 0 30px rgba(255,61,90,0.25); }
+.big-num.zero     { color: var(--gold);  text-shadow: 0 0 30px rgba(245,200,66,0.25); }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 10px;
+  text-align: center;
+}
+.stat-card .s-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+.stat-card .s-val {
+  font-family: 'Zen Dots', cursive;
+  font-size: 24px;
+}
+.stat-card.win .s-val  { color: var(--green); }
+.stat-card.lose .s-val { color: var(--red); }
+.stat-card.draw .s-val { color: var(--gold); }
+
+/* ── Record List ── */
+.section-title {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.record-list { display: flex; flex-direction: column; gap: 8px; }
+
+.record-item {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+  transition: opacity 0.3s;
+}
+.record-item.win  { border-left: 3px solid var(--green); }
+.record-item.lose { border-left: 3px solid var(--red); }
+.record-item.draw { border-left: 3px solid var(--gold); }
+
+.record-date {
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  min-width: 80px;
+}
+.record-info { flex: 1; }
+.record-amount {
+  font-family: 'Zen Dots', cursive;
+  font-size: 20px;
+}
+.record-item.win  .record-amount { color: var(--green); }
+.record-item.lose .record-amount { color: var(--red); }
+.record-item.draw .record-amount { color: var(--gold); }
+
+.record-memo {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+.btn-delete {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 16px;
+  width: 34px;
+  height: 34px;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.btn-delete:active {
+  background: rgba(255,61,90,0.15);
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+.empty-state .emoji { font-size: 48px; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; line-height: 1.6; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page">
+
+  <!-- 累計表示 -->
+  <div class="stats-total">
+    <div class="label">TOTAL RESULT</div>
+    <div class="big-num {% if total_amount > 0 %}positive{% elif total_amount < 0 %}negative{% else %}zero{% endif %}">
+      {% if total_amount > 0 %}+¥{{ total_amount|floatformat:0 }}
+      {% elif total_amount < 0 %}-¥{{ total_amount|cut:"-"|floatformat:0 }}
+      {% else %}¥0{% endif %}
+    </div>
+  </div>
+
+  <!-- 戦績カード -->
+  <div class="stats-grid">
+    <div class="stat-card win">
+      <div class="s-label">🏆 勝ち</div>
+      <div class="s-val">{{ win_count }}</div>
+    </div>
+    <div class="stat-card lose">
+      <div class="s-label">💀 負け</div>
+      <div class="s-val">{{ lose_count }}</div>
+    </div>
+    <div class="stat-card draw">
+      <div class="s-label">🤝 引分</div>
+      <div class="s-val">{{ draw_count }}</div>
+    </div>
+  </div>
+
+  <!-- 記録一覧 -->
+  <p class="section-title">📋 記録一覧 ({{ total_count }}件)</p>
+
+  {% if records %}
+    <div class="record-list" id="recordList">
+      {% for record in records %}
+        <div class="record-item {% if record.amount > 0 %}win{% elif record.amount < 0 %}lose{% else %}draw{% endif %}"
+             id="record-{{ record.pk }}">
+          <div class="record-date">{{ record.date|date:"m/d" }}<br><small>{{ record.date|date:"Y" }}</small></div>
+          <div class="record-info">
+            <div class="record-amount">
+              {% if record.amount > 0 %}+¥{{ record.amount|floatformat:0 }}
+              {% elif record.amount < 0 %}-¥{{ record.amount|cut:"-"|floatformat:0 }}
+              {% else %}±¥0{% endif %}
+            </div>
+            {% if record.memo %}
+              <div class="record-memo">{{ record.memo }}</div>
+            {% endif %}
+          </div>
+          <button class="btn-delete" data-pk="{{ record.pk }}">🗑</button>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="emoji">🎰</div>
+      <p>まだ記録がありません。<br>「記録する」から収支を入力してください。</p>
+    </div>
+  {% endif %}
+
+</div>
+
+<script>
+  const CSRF_TOKEN = '{{ csrf_token }}';
+
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.btn-delete');
+    if (!btn) return;
+    const pk = btn.dataset.pk;
+    deleteRecord(pk);
+  });
+
+  async function deleteRecord(pk) {
+    if (!confirm('この記録を削除しますか？')) return;
+    try {
+      const res = await fetch(`/delete/${pk}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF_TOKEN },
+      });
+      const data = await res.json();
+      if (data.success) {
+        const el = document.getElementById('record-' + pk);
+        el.style.opacity = '0';
+        setTimeout(() => {
+          el.remove();
+          location.reload();
+        }, 300);
+      }
+    } catch (e) {
+      alert('削除に失敗しました');
+    }
+  }
+</script>
+{% endblock %}
